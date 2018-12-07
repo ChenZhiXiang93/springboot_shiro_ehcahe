@@ -17,12 +17,12 @@ public class ResponseResult {
 
     public ResponseResult() {
         this.code = IStatusMessage.SystemStatus.SUCCESS.getCode();
-        this.message = IStatusMessage.SystemStatus.SUCCESS.getMessage();
+        this.msg = IStatusMessage.SystemStatus.SUCCESS.getMsg();
     }
 
     public ResponseResult(IStatusMessage statusMessage){
         this.code = statusMessage.getCode();
-        this.message = statusMessage.getMessage();
+        this.msg = statusMessage.getMsg();
 
     }
 

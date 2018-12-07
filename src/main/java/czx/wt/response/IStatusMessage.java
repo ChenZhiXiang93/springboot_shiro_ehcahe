@@ -1,18 +1,19 @@
 package czx.wt.response;
 
 /**
- * @Description: 类作用描述
- * @Author: ChenZhiXiang
- * @CreateDate: 2018/12/6 0006 20:43
- * @Version: 1.0
+ * @项目名称： wyait-manage
+ * @类名称： IStatusMessage
+ * @类描述：响应状态信息
+ * @创建时间： 2018年1月4日11:04:17
+ * @version:
  */
 public interface IStatusMessage {
 
-    String code();
+    String getCode();
 
-    String msg();
+    String getMsg();
 
-    public enum SystemStatus implements IStatusMessage{
+     public enum SystemStatus implements IStatusMessage{
 
         SUCCESS("1000","SUCCESS"), //请求成功
         ERROR("1001","ERROR"),	   //请求失败
@@ -27,9 +28,19 @@ public interface IStatusMessage {
 
         private String msg;
 
+        private SystemStatus(String code,String msg){
+            this.code = code;
+            this.msg = msg;
+        }
 
+        @Override
+        public String getCode(){
+            return this.code;
+        }
 
+        @Override
+        public String getMsg(){
+            return this.msg;
+        }
     }
-
-
 }
