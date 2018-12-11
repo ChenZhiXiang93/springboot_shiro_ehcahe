@@ -1,11 +1,15 @@
 package czx.wt.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import czx.wt.entity.UserDTO;
+import czx.wt.entity.UserRoleDTO;
 import czx.wt.entity.UserRolesVO;
 import czx.wt.entity.UserSearchDTO;
 import czx.wt.mapper.RoleMapper;
 import czx.wt.mapper.UserMapper;
 import czx.wt.mapper.UserRoleMapper;
+import czx.wt.pojo.Role;
 import czx.wt.pojo.User;
 import czx.wt.service.UserService;
 import czx.wt.utils.PageDataResult;
@@ -14,9 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author ChenZhiXiang
@@ -49,14 +57,48 @@ public class UserServiceImpl implements UserService {
                 userSearch.setInsertTimeStart(df.format(new Date()));
             }
             if (StringUtils.isNotEmpty(userSearch.getInsertTimeStart()) && StringUtils.isNotEmpty(userSearch.getInsertTimeEnd())){
-
+                if (userSearch.getInsertTimeEnd().compareTo(
+                        userSearch.getInsertTimeStart()) < 0) {
+                    String temp = userSearch.getInsertTimeStart();
+                    userSearch
+                            .setInsertTimeStart(userSearch.getInsertTimeEnd());
+                    userSearch.setInsertTimeEnd(temp);
+                }
             }
         }
-        return null;
+        PageDataResult pageDataResult = new PageDataResult();
+        PageHelper.startPage(page,limit);
+        List<UserRoleDTO> urList = userMapper.getUsers(userSearch);
+        // 获取分页查询后的数据
+        PageInfo<UserRoleDTO> pageInfo = new PageInfo<>(urList);
+        // 设置获取到的总记录数total：
+        pageDataResult.setTotals(Long.valueOf(pageInfo.getTotal()).intValue());
+        // 将角色名称提取到对应的字段中
+        if (null != urList && urList.size() > 0){
+            for (UserRoleDTO ur : urList){
+                List<Role> roles = roleMapper.getRoleByUserId(ur.getId());
+                if (null != null && roles.size() > 0){
+                    StringBuilder sb = new StringBuilder();
+                    for (int i =0;i < roles.size();i++){
+                        Role role = roles.get(i);
+                        sb.append(role.getRoleName());
+                        if (i != (roles.size() - 1)) {
+                            sb.append("，");
+                        }
+                    }
+                    ur.setRoleNames(sb.toString());
+                }
+            }
+        }
+        pageDataResult.setList(urList);
+        return pageDataResult;
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT, timeout = 30000, rollbackFor = {
+            RuntimeException.class, Exception.class })
     public String setUser(User user, String roleIds) {
+
         return null;
     }
 
